@@ -4,14 +4,14 @@ const Customers = require('./customer');         // Imported MongoDB model for '
 const express = require('express');              // Express.js web framework
 const bodyParser = require('body-parser');       // Middleware for parsing JSON requests
 const path = require('path');                    // Node.js path module for working with file and directory paths
-const dotenv = require('dotenv');
+const dotenv = require('dotenv');                // Module for loading environment variables from a .env file
 // Importing the 'bcrypt' library for hashing passwords.
 const bcrypt = require('bcrypt');
 // Defining the number of salt rounds for bcrypt hashing. This determines the complexity of the hashing process.
 const saltRounds = 5;
 
 // Defining a constant password for demonstration purposes. In a real application, passwords should be securely hashed and stored.
-const password = "admin";                // Module for loading environment variables from a .env file
+const password = "admin";              
 
 dotenv.config();
 
