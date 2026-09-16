@@ -1,2 +1,1 @@
-# regitration_and_login
-
+# coding-project-template
