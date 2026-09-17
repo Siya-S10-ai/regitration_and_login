@@ -2,6 +2,7 @@
 const mongoose = require('mongoose');            // MongoDB ODM library
 const Customers = require('./customer');         // Imported MongoDB model for 'customers'
 const express = require('express');              // Express.js web framework
+const session = require('express-session');      // Middleware for managing user sessions
 const bodyParser = require('body-parser');       // Middleware for parsing JSON requests
 const path = require('path');                    // Node.js path module for working with file and directory paths
 const dotenv = require('dotenv');                // Module for loading environment variables from a .env file
@@ -17,6 +18,14 @@ dotenv.config();
 
 // Creating an instance of the Express application
 const app = express();
+
+app.use(session({
+    cookie: { maxAge: 120000 }, // Session expires after 2 minutes of inactivity
+    secret: 'itsmysecret', // Secret key for signing the session ID cookie
+    res: false, // Forces the session to be saved back to the session store, even if it was never modified during the request
+    saveUninitialized: true, // Forces a session that is "uninitialized" to be saved to the store. A session is uninitialized when it is new but not modified
+    genid: () => uuid.v4() // Generates a unique session ID using the uuid library
+}));
 
 // Setting the port number for the server
 const port = 3000;
@@ -48,7 +57,10 @@ app.post('/api/login', async (req, res) => {
     if (documents.length > 0) {
         let result = await bcrypt.compare(password, documents[0]['password']);
         if(true) {
-            res.send("User Logged In")
+            const genidValue = req.sessionID; // Storing the session ID in a variable for potential use
+            req.session.username = user_name; // Storing the username in the session for later use
+            res.cookie('username', user_name); // Setting a cookie with the username for client-side access
+            res.sendFile(path.join(__dirname, 'frontend', 'home.html')); // Serving the home page to the client
         } else {
             res.send("Password Incorrect! Try again");
         } 
