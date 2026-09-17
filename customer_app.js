@@ -3,6 +3,7 @@ const mongoose = require('mongoose');            // MongoDB ODM library
 const Customers = require('./customer');         // Imported MongoDB model for 'customers'
 const express = require('express');              // Express.js web framework
 const session = require('express-session');      // Middleware for managing user sessions
+const { v4: uuidv4 } = require('uuid');          // Library for generating unique identifiers (UUIDs)
 const bodyParser = require('body-parser');       // Middleware for parsing JSON requests
 const path = require('path');                    // Node.js path module for working with file and directory paths
 const dotenv = require('dotenv');                // Module for loading environment variables from a .env file
@@ -22,7 +23,7 @@ const app = express();
 app.use(session({
     cookie: { maxAge: 120000 }, // Session expires after 2 minutes of inactivity
     secret: 'itsmysecret', // Secret key for signing the session ID cookie
-    res: false, // Forces the session to be saved back to the session store, even if it was never modified during the request
+    resave: false, // Forces the session to be saved back to the session store, even if it was never modified during the request
     saveUninitialized: true, // Forces a session that is "uninitialized" to be saved to the store. A session is uninitialized when it is new but not modified
     genid: () => uuid.v4() // Generates a unique session ID using the uuid library
 }));
@@ -99,6 +100,18 @@ app.post('/api/add_customer', async (req, res) => {
 app.get('/', async (req, res) => {
     res.sendFile(path.join(__dirname, 'frontend', 'home.html'));
 });
+
+// GET endpoint for the user logout
+app.get('/api/logout', async (req, res) => {
+    req.session.destroy((err) => {
+        if (err) { // Handling any errors that occur during session destruction
+            console.error(err);
+        } else {
+            res.cookie('username', '', { expires: new Date(0) }); // Clearing the username cookie by setting its expiration date to a past date
+            res.redirect('/'); // Redirecting the user to the home page after logout
+        }
+    });
+})
 
 // Starting the server and listening on the specified port
 app.listen(port, () => {
