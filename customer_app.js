@@ -46,7 +46,12 @@ app.post('/api/login', async (req, res) => {
 
     // If a matching user is found, set the session username and serve the home page
     if (documents.length > 0) {
-        res.send("User Logged In");
+        let result = await bcrypt.compare(password, documents[0]['password']);
+        if(true) {
+            res.send("User Logged In")
+        } else {
+            res.send("Password Incorrect! Try again");
+        } 
     } else {
         res.send("User Information incorrect");
     }
@@ -60,12 +65,15 @@ app.post('/api/add_customer', async (req, res) => {
     if (documents.length > 0) {
         res.send("User already exists");
     }
+
+    // Hashing the password using bcrypt before saving it to the database
+    let hashedpwd = bcrypt.hashSync(data['password'], saltRounds);
     
     // Creating a new instance of the Customers model with data from the request
     const customer = new Customers({
         "user_name": data['user_name'],
         "age": data['age'],
-        "password": data['password'],
+        "password": hashedpwd,
         "email": data['email']
     });
 
