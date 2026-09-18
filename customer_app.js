@@ -25,15 +25,24 @@ app.use(session({
     secret: 'itsmysecret', // Secret key for signing the session ID cookie
     resave: false, // Forces the session to be saved back to the session store, even if it was never modified during the request
     saveUninitialized: true, // Forces a session that is "uninitialized" to be saved to the store. A session is uninitialized when it is new but not modified
-    genid: () => uuid.v4() // Generates a unique session ID using the uuid library
+    genid: () => uuidv4() // Generates a unique session ID using the uuid library
 }));
 
 // Setting the port number for the server
-const port = 3000;
+const port = 3001;
 
 // MongoDB connection URI and database name
-const uri =  process.env.MONGODB_URI;
-mongoose.connect(uri, {'dbName': 'customerDB'});
+const uri = process.env.MONGODB_URI;
+
+if (!uri) {
+    console.error('MONGODB_URI is missing. Set it in your .env file before starting the app.');
+} else {
+    mongoose.connect(uri, { dbName: 'customerDB' })
+        .then(() => console.log('Connected to MongoDB Atlas successfully.'))
+        .catch((err) => {
+            console.error('MongoDB connection failed:', err.message);
+        });
+}
 
 // Middleware to parse JSON requests
 app.use("*", bodyParser.json());
@@ -52,7 +61,7 @@ app.post('/api/login', async (req, res) => {
     let password = data['password'];
 
     // Querying the MongoDB 'customers' collection for matching user_name and password
-    const documents = await Customers.find({ user_name: user_name, password: password });
+    const documents = await Customers.find({ user_name: user_name });
 
     // If a matching user is found, set the session username and serve the home page
     if (documents.length > 0) {
@@ -71,7 +80,7 @@ app.post('/api/login', async (req, res) => {
 });
 
 // POST endpoint for adding a new customer
-app.post('/api/add_customer', async (req, res) => {
+app.post('/api/register', async (req, res) => {
     const data = req.body;
     console.log(data)
     const documents = await Customers.find({ user_name: data['user_name']});
